@@ -1,0 +1,38 @@
+---
+
+cat_vms:
+  hosts:
+    cat-vm1:
+      ansible_host: place_host_here
+#      ansible_port: 54877
+      ansible_port: 22
+#      ansible_ssh_user: ansible
+      provided_user: root
+      provided_pass: place_password_here
+      vm_groups: [ ansible, catsearch ]
+      vm_users:
+        - { name: ansible, groups: "ansible, sudo", key: "files/ssh_key/id-cat.ansible.pub" }
+        - { name: catsearch, groups: "catsearch, sudo", key: "files/ssh_key/id-cat.catsearch.pub" }
+      docker_install: true
+  vars:
+    # ssh_pubkey_authentication string values: yes/no
+    ssh_pubkey_authentication: yes
+    normalize_create_user: true
+    #iptables_common: true
+    pubkeyauth_status: false
+    sudo_status: false
+    # role ddns
+    ddns_hostname: place_host_here
+    ddns_token: place_password_here
+    # role netfilter task nftables_configure_common
+    #nftables_common: true
+    # Postgresql role
+    postgresql_deploy: false                         # Task deploy
+    postgresql_import_data: true                    # Task import_data
+    pg_data: /opt/catsearch/pg/pgdata               # On host
+    pg_dir: /opt/catsearch/pg/deploy                # On host
+    pg_import_data: /opt/catsearch/pg/import_data   # On host
+    pg_container_name: pg
+    pg_port: 65433
+    pg_user: postgres
+    pg_pass: place_password_here
