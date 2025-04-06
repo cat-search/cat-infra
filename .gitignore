@@ -123,7 +123,7 @@ tmp/
 # Private keys, certs & other secrets
 **/*.key
 **/files/ssh_key/
-src/ansible/roles/openvpn/files/client
 
 # Ansible inventory
 src/ansible/inventory/
+deploy/ansible/inventory/
