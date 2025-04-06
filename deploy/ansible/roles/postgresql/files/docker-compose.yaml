@@ -1,0 +1,21 @@
+services:
+  pg:
+    image: "postgres:17"
+    container_name: pg
+    restart: unless-stopped
+    #env_file:
+    #  - "vars.env"
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: local
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: place_password_here
+    volumes:
+      # external_directory:internal_directory
+      # volume for postgresql data
+      - "${PG_DATA:-/opt/catsearch/pg/pgdata}:/var/lib/postgresql/data/pgdata"
+      # volume for .dump files
+      - "${PG_IMPORT_DATA:-/opt/catsearch/pg/import_data}:/opt/catsearch/import_data"
+    ports:
+      # "external_port:internal_port"
+      - "65432:5432"

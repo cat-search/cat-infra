@@ -1,0 +1,15 @@
+# Puts public ssh keys into ~/.ssh/authorized_keys for users
+
+---
+- name: Copy public ssh keys
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    state: present
+    key: "{{ lookup('file', item.key) }}"
+  with_items: "{{ vm_users }}"
+  vars:
+    ansible_ssh_user: "{{ provided_user }}"
+    ansible_ssh_pass: "{{ provided_pass }}"
+    # Connect with user/pass auth
+    ansible_ssh_common_args: "-o PubkeyAuthentication={{ ssh_pubkey_authentication | default('no') }}"
+  become: true

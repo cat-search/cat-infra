@@ -1,0 +1,17 @@
+---
+- name: IP show
+  ansible.builtin.shell:
+    cmd: >
+      hostname;
+      lsb_release -a;
+      ip -4 addr show; 
+      ip -6 addr show
+  register: ip_show_result
+  ignore_errors: yes
+  check_mode: false
+
+- name: "IP show: result"
+  ansible.builtin.debug:
+    msg: "{{ ip_show_result.stdout_lines }}"
+  check_mode: false
+  when: ip_show_result is defined

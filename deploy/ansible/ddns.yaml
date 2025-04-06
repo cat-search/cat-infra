@@ -1,0 +1,9 @@
+---
+- name: DDNS configuration
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: DNS configure
+      ansible.builtin.include_role:
+        name: ddns
+        tasks_from: ddns_client

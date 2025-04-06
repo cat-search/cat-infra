@@ -1,0 +1,41 @@
+# Configures sshd with
+#   - Public key authentication enabled
+#   - Password authentication disabled
+
+---
+# Change sshd_config
+- name: Configure sshd
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backup: yes
+    validate: /usr/sbin/sshd -T -f %s
+    #  Port 54877
+  loop:
+    - { line: 'Port 54877',                         regexp: '^#Port' }
+    - { line: 'UseDNS no',                          regexp: '^UseDNS' }
+    - { line: 'PubkeyAuthentication yes',           regexp: '^PubkeyAuthentication' }
+    - { line: 'PasswordAuthentication no',          regexp: '^PasswordAuthentication' }
+    - { line: 'ChallengeResponseAuthentication no', regexp: '^ChallengeResponseAuthentication' }
+    - { line: 'KerberosAuthentication no',          regexp: '^KerberosAuthentication' }
+    - { line: 'GSSAPIAuthentication no',            regexp: '^GSSAPIAuthentication' }
+    - { line: 'PermitEmptyPasswords no',            regexp: '^PermitEmptyPasswords' }
+    - { line: 'PermitRootLogin no',                 regexp: '^PermitRootLogin' }
+    - { line: 'X11Forwarding no',                   regexp: '^X11Forwarding' }
+    - { line: 'AllowAgentForwarding no',            regexp: '^AllowAgentForwarding' }
+    - { line: 'AllowTcpForwarding no',              regexp: '^AllowTcpForwarding' }
+    - { line: 'PermitTunnel no',                    regexp: '^PermitTunnel' }
+    - { line: 'MaxAuthTries 1',                     regexp: '^MaxAuthTries' }
+    - { line: 'LoginGraceTime 3',                   regexp: '^LoginGraceTime' }
+  become: true
+  register: sshd_config_result
+
+# Apply new sshd_config
+- name: Reload sshd
+  ansible.builtin.systemd_service:
+    name: sshd
+    state: reloaded
+  become: true
+  register: sshd_reload_result
+  when: sshd_config_result.changed

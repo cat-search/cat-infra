@@ -1,0 +1,11 @@
+[Unit]
+Description=Update DDNS record on Dynv6.com
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ddns-client.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target

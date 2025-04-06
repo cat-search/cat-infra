@@ -1,0 +1,11 @@
+---
+- name: Get information
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    # ip addresses
+    - name: Get IPs
+      ansible.builtin.include_role:
+        name: netfilter
+        tasks_from: ip

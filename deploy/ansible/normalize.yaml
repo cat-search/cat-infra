@@ -1,0 +1,59 @@
+# This playbook to normalize a new remote VM (VPS)
+#   - Checks if pubkey auth is already working. If it's not:
+#   - Creates users and groups
+#   - Copies public SSH keys into authorized_keys
+#   - Checks pubkey auth again
+#
+---
+- name: Normalization
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    # Check SSH pubkey auth for users
+    - name: Check ssh pubkey auth
+      ansible.builtin.include_role:
+        name: ssh
+        tasks_from: check_pubkey_auth
+
+    # Create users and groups on VMs wia user/pass auth
+    - name: Create users and groups
+      ansible.builtin.include_role:
+        name: user
+        tasks_from: user
+      when: >
+        ((pubkeyauth_status is defined) and not pubkeyauth_status)
+        or (normalize_create_user is defined and normalize_create_user)
+
+    # Copy pub keys to VMs
+    - name: Copy public ssh keys
+      ansible.builtin.include_role:
+        name: ssh
+        tasks_from: authorized_keys
+      when: (pubkeyauth_status is defined) and not pubkeyauth_status
+
+    # Check sudo
+    - name: Check sudo with ssh pubkey auth
+      ansible.builtin.include_role:
+        name: ssh
+        tasks_from: check_sudo
+
+    # Configure sudoers.d/sudo
+    - name: Configure sudo w/o pass
+      ansible.builtin.include_role:
+        name: user
+        tasks_from: sudoers
+      when: sudo_status is undefined or not sudo_status
+
+    # Check sudo
+    - name: Check sudo with ssh pubkey auth
+      ansible.builtin.include_role:
+        name: ssh
+        tasks_from: check_sudo
+
+    # Disable password auth in SSH
+    - name: Disable sshd password authentication
+      ansible.builtin.include_role:
+        name: ssh
+        tasks_from: sshd_config
+      when: sudo_status is defined and sudo_status

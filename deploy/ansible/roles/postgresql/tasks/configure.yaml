@@ -1,0 +1,49 @@
+# llama.cpp
+# 1. Create directory
+# 2. Download model
+# 3. Deliver docker-compose.yaml
+# 4. Generate .env
+# 5. Docker run
+---
+
+# 1. Create directory
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: ansible
+    group: docker
+    mode: u+rw,g+rw,o-rwx
+  with_items:
+    - "{{ pg_data }}"
+    - "{{ pg_dir }}"
+    - "{{ pg_import_data }}"
+  become: true
+
+# 2. Deliver docker-compose.yaml
+- name: Deliver docker-compose.yaml
+  ansible.builtin.copy:
+    remote_src: false
+    src: "docker-compose.yaml"
+    dest: "{{ pg_dir }}/docker-compose.yaml"
+    force: true
+    owner: ansible
+    group: docker
+    mode: u=rw,g=rw,o=r
+  register: pg_docker_compose_yaml_result
+
+# 4.1. Docker run
+- name: Docker run
+  community.docker.docker_compose_v2:
+    project_src: "{{ pg_dir }}"
+    remove_orphans: true
+    # auto: containers will be recreated when their configuration differs from the service definition
+    recreate: auto
+  register: pg_docker_run_result
+  when: pg_docker_compose_yaml_result is defined and pg_docker_compose_yaml_result.changed
+
+# 4.2. Docker run: print
+- name: "Docker run: print"
+  ansible.builtin.debug:
+    var: pg_docker_run_result
+  when: pg_docker_run_result is defined

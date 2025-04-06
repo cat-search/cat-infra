@@ -1,0 +1,17 @@
+---
+
+- name: postgresql
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Configure
+      ansible.builtin.include_role:
+        name: postgresql
+        tasks_from: configure
+      when: postgresql_deploy is defined and postgresql_deploy | bool
+
+    - name: Import
+      ansible.builtin.include_role:
+        name: postgresql
+        tasks_from: import_data
+      when: postgresql_import_data is defined and postgresql_import_data | bool

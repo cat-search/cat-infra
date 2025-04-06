@@ -1,0 +1,36 @@
+# Checks ssh public key authentication
+# Returns: pubkeyauth_status
+
+---
+- name: "Check pubkey auth"
+  ansible.builtin.shell: |
+    uptime
+  ignore_errors: true
+  ignore_unreachable: true
+  register: result
+
+- name: "Check pubkey auth: output"
+  ansible.builtin.debug:
+    msg: "{{ result.stdout_lines }}"
+  when: result.failed is defined and not result.failed
+
+- name: "Check pubkey auth: save var"
+  ansible.builtin.set_fact:
+    pubkeyauth_status: "{{ 'true' if (result.failed is defined and not result.failed) else 'false' }}"
+#    pubkeyauth_status: "{{ 'false' if (result.unreachable is defined and result.unreachable) else 'true' }}"
+
+- name: "Check pubkey auth: save var: print"
+  ansible.builtin.debug:
+    msg: "{{ pubkeyauth_status }}"
+
+#- name: Password auth check
+#  ansible.builtin.shell: |
+#    uptime
+#  vars:
+#    ansible_ssh_user: "{{ provided_user }}"
+#    ansible_ssh_pass: "{{ provided_pass }}"
+#    # Connect with user/pass auth
+#    ansible_ssh_common_args: '-o PubkeyAuthentication=no'
+#  register: passwordauth_result
+
+

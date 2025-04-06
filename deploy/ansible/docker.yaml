@@ -1,0 +1,16 @@
+# This playbook to normalize a new remote VM (VPS)
+#   - Checks if pubkey auth is already working. If it's not:
+#   - Creates users and groups
+#   - Copies public SSH keys into authorized_keys
+#   - Checks pubkey auth again
+#
+---
+- name: Docker
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Docker
+      ansible.builtin.include_role:
+        name: docker
+        tasks_from: main

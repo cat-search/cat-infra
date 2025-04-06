@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "cat-infra"
+version = "0.0.0"
+description = ""
+
+[tool.poetry.dependencies]
+python = "~3.10"
+ansible = "~10.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,55 @@
+# Updates domain (A, ...) on dynv6.com DDNS service
+# 1. Delivers update script
+# 2. Fill vars
+# 3. Deliver systemd service configuration
+# 4. Enable & start ddns service
+---
+
+# 1. Delivers update script
+- name: Deliver ddns update script
+  ansible.builtin.copy:
+    remote_src: false
+    src: "ddns-client.sh"
+    dest: "/usr/local/bin/ddns-client.sh"
+    force: true
+    mode: u=rwx,g=rwx,o-rwx
+    owner: root
+    group: root
+  become: true
+
+# 2. Fill vars
+- name: Place vars into ddns update script
+  ansible.builtin.blockinfile:
+    path: "/usr/local/bin/ddns-client.sh"
+    insertafter: >
+      #!/bin/bash
+    block: |
+      update_url={{ ddns_update_url | default('https://dynv6.com/api/update') }}
+      hostname={{ ddns_hostname }}
+      token={{ ddns_token }}
+      ipv4=$(curl -s ip4only.me/api/ | awk -F, '{print $2}')
+  become: true
+
+# 3. Deliver systemd service configuration
+- name: Deliver ddns service configuration
+  ansible.builtin.copy:
+    remote_src: false
+    src: "ddns-client.service"
+    dest: "/etc/systemd/system/ddns-client.service"
+    # force: If true, the remote file will be replaced when contents are different
+    force: true
+    mode: u=rwx,g=rwx,o-rwx
+    owner: root
+    group: root
+  become: true
+
+# 4. Enable & start ddns service
+- name: Enable ddns service
+  #ansible.builtin.systemd_service:
+  ansible.builtin.systemd:
+    name: ddns-client
+    enabled: true
+    state: started
+    masked: false
+  become: true
+

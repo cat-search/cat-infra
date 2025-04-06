@@ -1,0 +1,62 @@
+---
+
+# 1. Create directory
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: ansible
+    group: docker
+    mode: u+rw,g+rw,o-rwx
+  with_items:
+    - "{{ pg_import_data }}"
+  become: true
+
+# 2. Deliver
+- name: Deliver dumps
+  ansible.builtin.copy:
+    remote_src: false
+    src: "{{ item }}"
+    dest: "{{ pg_import_data }}/{{ item }}"
+    force: true
+    owner: ansible
+    group: docker
+    mode: u=rw,g=rw,o=r
+  with_items:
+    - "cms.dump"
+    - "filestorage.dump"
+    - "lists.dump"
+
+## 4.1. Docker run
+#- name: Create databases
+#  ansible.builtin.shell: >
+#    docker exec -ti {{ pg_container_name }}
+#    /bin/bash -c
+#    'pgsql -U {{ pg_user }}
+#    --no-owner --format c --no-privileges {{ item.file }}'
+#  #  --dbname {{ item.db }}
+#  with_items:
+#    - "cms.dump"
+#    - "filestorage.dump"
+#    - "lists.dump"
+#  register: pg_restore_result
+
+- name: pg_restore
+  ansible.builtin.shell: > 
+    docker exec -ti {{ pg_container_name }} 
+    /bin/bash -c
+    'pg_restore --create
+    -U {{ pg_user }}
+    --dbname postgres 
+    --no-owner --format c --no-privileges {{ item.file }}'
+  with_items:
+    - { db: cms, file: "/opt/catsearch/import_data/cms.dump" }
+    - { db: filestorage, file: "/opt/catsearch/import_data/filestorage.dump" }
+    - { db: lists, file: "/opt/catsearch/import_data/lists.dump" }
+  register: pg_restore_result
+
+# 4.2. Docker run: print
+- name: "pg_restore: print"
+  ansible.builtin.debug:
+    var: pg_restore_result
+  when: pg_restore_result is defined

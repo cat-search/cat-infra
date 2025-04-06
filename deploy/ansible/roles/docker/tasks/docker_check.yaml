@@ -1,0 +1,12 @@
+---
+- name: Check docker
+  shell:
+    cmd: docker -v 2>&1
+  register: docker_is_installed
+  ignore_errors: yes
+  check_mode: false
+
+- name: "Check docker: result"
+  debug:
+    msg: "{{ docker_is_installed.stdout_lines }}"
+  check_mode: false

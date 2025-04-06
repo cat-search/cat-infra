@@ -1,0 +1,56 @@
+---
+# Made up from this source: https://docs.docker.com/engine/install/ubuntu/
+
+#- name: Remove conflicting packages
+#  ansible.builtin.apt:
+#    pkg:
+#      - docker.io
+#      - docker-compose
+#      - docker-compose-v2
+#      - docker-doc
+#      - podman-docker
+#    state: absent
+
+- name: "Add Docker's official GPG key: required packages"
+  become: yes
+  ansible.builtin.apt:
+    pkg:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: yes
+
+# Checked: 2025-01-19
+- name: "Add Docker's official GPG key: key"
+  ansible.builtin.shell: | 
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+- name: "Add the repository to Apt sources"
+  ansible.builtin.shell: | 
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+
+- name: "Install docker"
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
+- name: "Allow the user to use docker"
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_ssh_user }}"
+    groups: docker
+    append: yes

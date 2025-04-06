@@ -1,0 +1,29 @@
+# Checks:
+#   - SSH public key authentication
+#   - sudo w/o password
+# Returns: sudo_status
+
+---
+# Check sudo with pubkey auth
+- name: "Check sudo"
+  ansible.builtin.shell: |
+    id
+  become: true
+  ignore_errors: true
+  ignore_unreachable: true
+  vars:
+    ansible_ssh_common_args: '-o PubkeyAuthentication=yes -o PasswordAuthentication=no'
+  register: result
+
+- name: "Check sudo: output"
+  ansible.builtin.debug:
+    msg: "{{ result.stdout_lines }}"
+  when: result.failed is defined and not result.failed
+
+- name: "Check sudo: save var"
+  ansible.builtin.set_fact:
+    sudo_status: "{{ 'true' if (result.failed is defined and not result.failed) else 'false' }}"
+
+- name: "Check sudo: print var"
+  ansible.builtin.debug:
+    msg: "{{ sudo_status }}"

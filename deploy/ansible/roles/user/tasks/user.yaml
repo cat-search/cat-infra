@@ -1,0 +1,44 @@
+# Task list to create users and groups
+
+---
+# Create groups on VMs using user/password auth
+- name: "Create groups"
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ vm_groups }}"
+  vars:
+    ansible_ssh_user: "{{ provided_user }}"
+    ansible_ssh_pass: "{{ provided_pass }}"
+    # Connect with user/pass auth
+    ansible_ssh_common_args: "-o PubkeyAuthentication={{ ssh_pubkey_authentication | default('no') }}"
+  register: create_group_result
+  become: true
+
+# Print
+- name: "Create groups: result"
+  ansible.builtin.debug:
+    msg: "{{ create_group_result }}"
+  when: create_group_result.changed
+
+# Create users on VMs using user/password auth
+- name: "Create users"
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups }}"
+    shell: /bin/bash
+    state: present
+  with_items: "{{ vm_users }}"
+  vars:
+    ansible_ssh_user: "{{ provided_user }}"
+    ansible_ssh_pass: "{{ provided_pass }}"
+    # Connect with user/pass auth
+    ansible_ssh_common_args: "-o PubkeyAuthentication={{ ssh_pubkey_authentication | default('no') }}"
+  register: create_user_result
+  become: true
+
+# Print
+- name: "Create users: result"
+  ansible.builtin.debug:
+    msg: "{{ create_group_result }}"
+  when: create_user_result.changed
