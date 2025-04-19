@@ -31,10 +31,29 @@ Run playbooks one by one:
 cd deploy/ansible
 
 # Sudo, authorized_keys, sshd_config (port, ...)
-ansible-playbook normalize.yaml -e ansible_port=22 -l cat-vm1
+ansible-playbook normalize.yaml -e ansible_port=22 -l cat-vm2
 # DDNS
 ansible-playbook ddns.yaml -l cat-vm1
-# OpenVPN configuration
+# postgresql configuration
 ansible-playbook postgresql.yaml -l cat-vm1
+# Docker install
+ansible-playbook docker.yaml -l cat-vm3
+```
+
+```shell
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+```
+
+```shell
+sudo apt-get install -y nvidia-container-toolkit
+```
+
+```shell
+# /etc/docker/daemon.json
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
 ```
 
